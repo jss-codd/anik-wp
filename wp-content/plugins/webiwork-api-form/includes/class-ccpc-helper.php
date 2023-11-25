@@ -38,8 +38,33 @@ if ( ! class_exists( 'Profile_Management_Helper', false ) ) :
 
 
 
+            //auto logout hook
+
+            add_action('init',array($this,'wp_autologout_hook'));
+
+
+
         }
 
+
+
+        public function wp_autologout_hook()
+
+        {
+
+            if(!isset($_GET['auto-logout']) || ($_GET['auto-logout'] != '1'))
+
+                return; 
+ 
+            if(is_user_logged_in()) {
+
+                wp_logout();
+
+                wp_redirect( site_url() ); exit;
+
+            } 
+
+        } 
 
 
         //check header authentication key
@@ -66,7 +91,9 @@ if ( ! class_exists( 'Profile_Management_Helper', false ) ) :
 
         //Register company API route and include authentication
 
-        public function pm_company_api_route() {
+        public function pm_company_api_route() 
+
+        {
 
             register_rest_route(
 
@@ -148,6 +175,80 @@ if ( ! class_exists( 'Profile_Management_Helper', false ) ) :
 
             ); 
 
+
+
+            register_rest_route(
+
+                'v1/profile',  
+
+                '/update/', 
+
+                array(
+
+                    'methods'   => 'POST',
+
+                    'callback'  => array($this, 'company_profile_update_api_callback'),
+
+                    'permission_callback' => function ($request) {
+
+                        $auth_key = $request->get_header('X-Auth-Key');
+
+                        if (!$auth_key || !$this->validate_auth_key($auth_key)) {
+
+                            return new WP_Error('rest_forbidden', 'Invalid authentication key.', array('status' => 403));
+
+                        }
+
+                        return true;
+
+                    },
+
+                    'args'=> array( 
+
+                        'user_id' => array(
+
+                            'required'  => true, 
+
+                            'type'     => 'number',
+
+                        ),
+
+                        'company_name' => array(
+
+                            'required'          => true, 
+
+                            'type'     => 'string',
+
+                        ),
+
+                        'contact_name' => array(
+
+                            'required'          => true,
+
+                            'type'     => 'string',  
+
+                        ),
+
+                        'mobile_number' => array(
+
+                            'required'  => true,   
+
+                        ), 
+
+                        'address' => array(
+
+                            'required' => true, 
+
+                            'type'     => 'string',  
+
+                        ),
+
+                    ),
+
+                )
+
+            ); 
+
         }
 
 
@@ -188,13 +289,17 @@ if ( ! class_exists( 'Profile_Management_Helper', false ) ) :
 
             //Password 6 to 8 regex pattern
 
-            $pattern = '/^.{6,15}$/';
-
-
+            $pattern = '/^.{6,15}$/'; 
+            $pattern = '/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@#$!%*?&])[A-Za-z\d@#$!%*?&]{8,15}$/'; 
 
             // Australian phone number regex pattern
 
             $regex = '/^(?:\+61|0)[2-478](?:[ -]?[0-9]){8}$/';
+
+            $passportVali = '/^(?!^0+$)[a-zA-Z0-9]{3,20}$/'; 
+            $passportVali = '/^[A-Za-z]{1,2}[0-9]{7}$/'; 
+
+            $drivRegex = '/^[A-Za-z0-9]{8,11}$/';
 
  
 
@@ -203,6 +308,8 @@ if ( ! class_exists( 'Profile_Management_Helper', false ) ) :
             $password = sanitize_text_field($password); 
 
             $email = sanitize_email($email); 
+
+            $expiration_date = isset($expiration_date) ? sanitize_text_field($expiration_date) : '';
 
             
 
@@ -228,8 +335,6 @@ if ( ! class_exists( 'Profile_Management_Helper', false ) ) :
 
             }
 
-
-
             if (!is_email($email)) {
 
 
@@ -254,6 +359,102 @@ if ( ! class_exists( 'Profile_Management_Helper', false ) ) :
 
 
 
+            if(!empty($passport) && !preg_match($passportVali, $passport))
+
+            { 
+
+                return new WP_Error(
+
+                    'rest_invalid_param', 
+
+                    sprintf( __( 'Passport number is invalid' ) ),
+
+                    array(
+
+                        'status' => 400,
+
+                        'params' => 'passport',
+
+                    )
+
+                );
+
+            }
+
+
+
+            if(!empty($driver_license) && !preg_match($drivRegex, $driver_license))
+
+            { 
+
+                return new WP_Error(
+
+                    'rest_invalid_param', 
+
+                    sprintf( __( 'Invalid license number' ) ),
+
+                    array(
+
+                        'status' => 400,
+
+                        'params' => 'driver_license',
+
+                    )
+
+                );
+
+            }
+
+            // Validate the date format
+            if (!empty($expiration_date) && !preg_match('/^\d{4}-\d{2}-\d{2}$/', $expiration_date)) {
+
+                return new WP_Error(
+
+                    'rest_invalid_param', 
+
+                    sprintf( __( 'Invalid date format. Please use YYYY-MM-DD' ) ),
+
+                    array(
+
+                        'status' => 400,
+
+                        'params' => 'expiration_date',
+
+                    ) 
+                );
+            }
+
+            if (!empty($expiration_date))
+            {
+
+                // Convert the date string to a DateTime object
+                $event_datetime = new DateTime($expiration_date);
+
+                // Get the current date
+                $current_datetime = new DateTime();
+
+                // Compare the event date with the current date
+                if ($event_datetime < $current_datetime) {
+
+                    return new WP_Error(
+
+                        'rest_invalid_param', 
+
+                        sprintf( __( 'Past dates are not allowed' ) ),
+
+                        array(
+
+                            'status' => 400,
+
+                            'params' => 'expiration_date',
+
+                        ) 
+                    );
+                 }
+            }
+ 
+
+
             // Define the regular expression for password validation (6 to 8 characters)
 
             if (!preg_match($pattern, $password)) {
@@ -262,7 +463,7 @@ if ( ! class_exists( 'Profile_Management_Helper', false ) ) :
 
                     'invalid_password_length', 
 
-                    sprintf( __( 'Password must be between 6 and 15 characters' ) ),
+                    sprintf( __( 'Password must be between 8 and 15 characters(Test@123)' ) ),
 
                     array(
 
@@ -490,6 +691,343 @@ if ( ! class_exists( 'Profile_Management_Helper', false ) ) :
 
 
 
+        //create api callback 
+
+        public function company_profile_update_api_callback($request) 
+
+        {
+
+            // Your custom logic goes here
+
+            $company_name = $request->get_param('company_name');
+
+            $contact_name = $request->get_param('contact_name');
+
+            $mobile_number = $request->get_param('mobile_number');
+
+            $user_id = $request->get_param('user_id'); 
+
+            $address = $request->get_param('address');  
+
+            $driver_license = $request->get_param('driver_license');
+
+            $passport = $request->get_param('passport');
+
+            $expiration_date = $request->get_param('expiration_date');
+
+ 
+
+            //check validation
+
+
+
+            //Password 6 to 8 regex pattern
+
+            $pattern = '/^.{6,15}$/'; 
+            $pattern = '/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@#$!%*?&])[A-Za-z\d@#$!%*?&]{8,15}$/'; 
+
+            // Australian phone number regex pattern
+
+            $regex = '/^(?:\+61|0)[2-478](?:[ -]?[0-9]){8}$/';
+
+            $passportVali = '/^(?!^0+$)[a-zA-Z0-9]{3,20}$/'; 
+
+            $passportVali = '/^[A-Za-z]{1,2}[0-9]{7}$/'; 
+
+            $drivRegex = '/^[A-Za-z0-9]{8,11}$/'; 
+ 
+
+            $mobile_number = sanitize_text_field($mobile_number); 
+
+            $password = sanitize_text_field($password); 
+
+            $email = sanitize_email($email); 
+
+            $expiration_date = isset($expiration_date) ? sanitize_text_field($expiration_date) : '';
+
+ 
+
+            if(!preg_match($regex, $mobile_number))
+
+            { 
+
+                return new WP_Error(
+
+                    'rest_invalid_param', 
+
+                    sprintf( __( 'Please enter a valid Australian phone number' ) ),
+
+                    array(
+
+                        'status' => 400,
+
+                        'params' => 'document',
+
+                    )
+
+                );
+
+            }
+
+
+
+            if(!empty($passport) && !preg_match($passportVali, $passport))
+
+            { 
+
+                return new WP_Error(
+
+                    'rest_invalid_param', 
+
+                    sprintf( __( 'Passport number is invalid' ) ),
+
+                    array(
+
+                        'status' => 400,
+
+                        'params' => 'passport',
+
+                    )
+
+                );
+
+            }
+
+
+
+            if(!empty($driver_license) && !preg_match($drivRegex, $driver_license))
+
+            { 
+
+                return new WP_Error(
+
+                    'rest_invalid_param', 
+
+                    sprintf( __( 'Invalid license number' ) ),
+
+                    array(
+
+                        'status' => 400,
+
+                        'params' => 'driver_license',
+
+                    )
+
+                );
+
+            } 
+ 
+            // Validate the date format
+            if (!empty($expiration_date) && !preg_match('/^\d{4}-\d{2}-\d{2}$/', $expiration_date)) {
+
+                return new WP_Error(
+
+                    'rest_invalid_param', 
+
+                    sprintf( __( 'Invalid date format. Please use YYYY-MM-DD' ) ),
+
+                    array(
+
+                        'status' => 400,
+
+                        'params' => 'expiration_date',
+
+                    ) 
+                );
+            }
+
+            if (!empty($expiration_date))
+            {
+
+                // Convert the date string to a DateTime object
+                $event_datetime = new DateTime($expiration_date);
+
+                // Get the current date
+                $current_datetime = new DateTime();
+
+                // Compare the event date with the current date
+                if ($event_datetime < $current_datetime) {
+
+                    return new WP_Error(
+
+                        'rest_invalid_param', 
+
+                        sprintf( __( 'Past dates are not allowed' ) ),
+
+                        array(
+
+                            'status' => 400,
+
+                            'params' => 'expiration_date',
+
+                        ) 
+                    );
+                 }
+            }
+            //get files
+
+            $file = $request->get_file_params(); 
+
+
+
+            //check documents
+
+            if(array_key_exists('document', $file))
+
+            {
+
+                if(!empty($file['document']['name']))
+
+                {
+
+                    $imageFileType = pathinfo($file['document']['name'],PATHINFO_EXTENSION);
+
+                    $valid_extensions = array("jpg","jpeg","png", "pdf");
+
+
+
+                    //This checks if the file is an document.
+
+                    if(!in_array(strtolower($imageFileType), $valid_extensions)) {
+
+                        return new WP_Error(
+
+                            'invalid_file_type', 
+
+                            sprintf( __( 'Invalid file type. You can only upload : %s' ), implode( ', ', $valid_extensions ) ),
+
+                            array(
+
+                                'status' => 400,
+
+                                'params' => 'document',
+
+                            )
+
+                        ); 
+
+                    } 
+
+                } 
+
+            } 
+
+
+
+            $user = get_user_by('ID', $user_id);
+
+
+
+            if(!$user)
+
+            {
+
+                return new WP_Error(
+
+                    'invalid_file_type', 
+
+                    sprintf( __( 'User not found : %s' ), $user_id ),
+
+                    array(
+
+                        'status' => 400,
+
+                        'params' => 'user_id',
+
+                    )
+
+                ); 
+
+            } 
+
+    
+
+            if(array_key_exists('document', $file))
+
+            {
+
+                $uploaddir = wp_upload_dir(); 
+
+
+
+                if(!empty($file['document']['name']))
+
+                {
+
+
+
+                    $document = $file['document'];
+
+                    $document_file = time().'-document-'.$document['name'];
+
+                    $document_sourcePath = $document['tmp_name']; 
+
+
+
+                    $filename_profile = $uploaddir['url'] . '/' . basename( $document_file );
+
+                    $uploadfile_profile = $uploaddir['path'] . '/' . basename( $document_file );
+
+
+
+                    $uploaded_profile = move_uploaded_file( $document_sourcePath , $uploadfile_profile );
+
+                      
+
+                    if (isset($uploaded_profile['error'])) {
+
+                        return new WP_Error(
+
+                            'upload_failed', 
+
+                            sprintf( __( 'Upload Failed: %s' ), $uploaded_file['error'] ),
+
+                            array(
+
+                                'status' => 422,
+
+                                'params' => 'document',
+
+                            )
+
+                        );
+
+                    }
+
+                    update_user_meta( $user_id, 'document_url', $filename_profile ); 
+
+                }
+
+            }
+
+
+
+            update_user_meta($user_id, 'company_name', $company_name);
+
+            update_user_meta($user_id, 'contact_name', $contact_name);
+
+            update_user_meta($user_id, 'mobile_number', $mobile_number); 
+
+            update_user_meta($user_id, 'address_1', $address);
+
+            update_user_meta($user_id, 'driver_license', $driver_license);
+
+            update_user_meta($user_id, 'passport', $passport);
+
+            update_user_meta($user_id, 'expiration_date', $expiration_date);
+
+            
+
+             $response = array('success' => true, 'message' => 'Sucessfull user update');
+
+            return rest_ensure_response($response);
+
+ 
+
+        }
+
+
+
         //Enqueue Script
 
         public function pm_custom_company_script_style()
@@ -499,7 +1037,6 @@ if ( ! class_exists( 'Profile_Management_Helper', false ) ) :
             wp_enqueue_script('ccpc_custom_jquery', CCPC_CUSTOM_PLUGIN_URL.'/assets/js/jquery.min.js');
 
 			wp_enqueue_script( 'ccpc_custom_jquery' ); 
-
 
 
             //js for custom   
@@ -518,23 +1055,21 @@ if ( ! class_exists( 'Profile_Management_Helper', false ) ) :
 
 			));
 
-
-
 			wp_enqueue_style('ccpc_custom_css', CCPC_CUSTOM_PLUGIN_URL.'/assets/css/custom-style.css',false,'0.4','all');
-
 			wp_enqueue_style( 'ccpc_custom_css' ); 
 
 
+            wp_enqueue_style('ccpc_jquery-ui-css', 'https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css',false,'0.1','all');
+            wp_enqueue_style( 'ccpc_jquery-ui-css' );
 
-            wp_enqueue_style('ccpc_custom_fontsstylesheet', 'https://fonts.googleapis.com/css2?family=Poppins:wght@100;200;300;400;500;600;700;800;900&display=swap',false,'0.1','all');
-
-            wp_enqueue_style( 'ccpc_custom_fontsstylesheet' );
-
-
-
-
+            wp_enqueue_script('ccpc_jquery-ui-js', 'https://code.jquery.com/ui/1.13.2/jquery-ui.js');
+            wp_enqueue_script( 'ccpc_jquery-ui-js' );
 
         }
+
+
+
+      
 
  
 

@@ -51,7 +51,7 @@ function webiwork_api_company_form_init() {
 
             /**
              * Protected constructor to prevent creating a new instance of the
-             * *CCP_Calculator* via the `new` operator from outside of this class.
+             * *Company_Profile_Management* via the `new` operator from outside of this class.
              */
             private function __construct() {
                 $this->init();
