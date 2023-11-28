@@ -274,13 +274,11 @@ if ( ! class_exists( 'Profile_Management_Helper', false ) ) :
             $address = $request->get_param('address'); 
 
 
-
             $driver_license = $request->get_param('driver_license');
 
             $passport = $request->get_param('passport');
 
             $expiration_date = $request->get_param('expiration_date');
-
  
 
             //check validation
@@ -477,69 +475,78 @@ if ( ! class_exists( 'Profile_Management_Helper', false ) ) :
 
             }
 
-
-
             //get files
 
             $file = $request->get_file_params(); 
 
-
-
             //check documents
 
             if(array_key_exists('document', $file))
-
             {
+                if(!empty($file['document']['name']))
+                {
 
-                $imageFileType = pathinfo($file['document']['name'],PATHINFO_EXTENSION);
+                    $imageFileType = pathinfo($file['document']['name'],PATHINFO_EXTENSION);
 
-                $valid_extensions = array("jpg","jpeg","png", "pdf");
+                    $valid_extensions = array("jpg","jpeg","png", "pdf");
 
+                    //This checks if the file is an document.
 
+                    if(!in_array(strtolower($imageFileType), $valid_extensions)) {
 
-                //This checks if the file is an document.
+                        return new WP_Error(
 
-                if(!in_array(strtolower($imageFileType), $valid_extensions)) {
+                            'invalid_file_type', 
 
-                    return new WP_Error(
+                            sprintf( __( 'Invalid file type. You can only upload : %s' ), implode( ', ', $valid_extensions ) ),
 
-                        'invalid_file_type', 
+                            array(
 
-                        sprintf( __( 'Invalid file type. You can only upload : %s' ), implode( ', ', $valid_extensions ) ),
+                                'status' => 400,
 
-                        array(
+                                'params' => 'document',
 
-                            'status' => 400,
+                            )
 
-                            'params' => 'document',
+                        ); 
 
-                        )
-
-                    ); 
-
-                }  
-
-            }else{
-
-
-
-                return new WP_Error(
-
-                    'rest_missing_callback_param', 
-
-                    sprintf( __( 'Missing parameter(s): %s' ), 'document' ),
-
-                    array(
-
-                        'status' => 400,
-
-                        'params' => 'document',
-
-                    )
-
-                );
+                    }  
+                }
 
             }
+
+            if(array_key_exists('passport_document', $file))
+            {
+
+                if(!empty($file['passport_document']['name']))
+                {
+                    $imageFileType = pathinfo($file['passport_document']['name'],PATHINFO_EXTENSION);
+
+                    $valid_extensions = array("jpg","jpeg","png", "pdf");
+
+                    //This checks if the file is an document.
+
+                    if(!in_array(strtolower($imageFileType), $valid_extensions)) {
+
+                        return new WP_Error(
+
+                            'invalid_file_type', 
+
+                            sprintf( __( 'Invalid file type. You can only upload : %s' ), implode( ', ', $valid_extensions ) ),
+
+                            array(
+
+                                'status' => 400,
+
+                                'params' => 'passport_document',
+
+                            )
+
+                        ); 
+
+                    }  
+                }
+            } 
 
 
 
@@ -569,52 +576,87 @@ if ( ! class_exists( 'Profile_Management_Helper', false ) ) :
 
 
 
-            $uploaddir = wp_upload_dir(); 
+            $uploaddir = wp_upload_dir();  
 
+            if(array_key_exists('document', $file))
+            {
+                if(!empty($file['document']['name']))
+                {
 
+                    $document = $file['document'];
 
-            $document = $file['document'];
+                    $document_file = time().'-document-'.$document['name'];
 
-            $document_file = time().'-document-'.$document['name'];
+                    $document_sourcePath = $document['tmp_name']; 
 
-            $document_sourcePath = $document['tmp_name']; 
+                    $filename_profile = $uploaddir['url'] . '/' . basename( $document_file );
 
+                    $uploadfile_profile = $uploaddir['path'] . '/' . basename( $document_file );
 
+                    $uploaded_profile = move_uploaded_file( $document_sourcePath , $uploadfile_profile );
+                      
 
-            $filename_profile = $uploaddir['url'] . '/' . basename( $document_file );
+                    if (isset($uploaded_profile['error'])) {
 
-            $uploadfile_profile = $uploaddir['path'] . '/' . basename( $document_file );
+                        return new WP_Error(
 
+                            'upload_failed', 
 
+                            sprintf( __( 'Upload Failed: %s' ), $uploaded_file['error'] ),
 
-            $uploaded_profile = move_uploaded_file( $document_sourcePath , $uploadfile_profile );
+                            array(
 
-              
+                                'status' => 422,
 
-            if (isset($uploaded_profile['error'])) {
+                                'params' => 'document',
 
-                return new WP_Error(
+                            )
 
-                    'upload_failed', 
+                        );
 
-                    sprintf( __( 'Upload Failed: %s' ), $uploaded_file['error'] ),
-
-                    array(
-
-                        'status' => 422,
-
-                        'params' => 'document',
-
-                    )
-
-                );
-
+                    }
+                }
             }
 
-            
+            if(array_key_exists('passport_document', $file))
+            {
+                if(!empty($file['passport_document']['name']))
+                {
 
+                    $passport_document = $file['passport_document'];
 
+                    $document_file = time().'-passport-document-'.$passport_document['name'];
 
+                    $document_sourcePath = $passport_document['tmp_name']; 
+
+                    $filename_passport_document = $uploaddir['url'] . '/' . basename( $document_file );
+
+                    $uploadfile_profile = $uploaddir['path'] . '/' . basename( $document_file );
+
+                    $uploaded_profile = move_uploaded_file( $document_sourcePath , $uploadfile_profile );
+                      
+
+                    if (isset($uploaded_profile['error'])) {
+
+                        return new WP_Error(
+
+                            'upload_failed', 
+
+                            sprintf( __( 'Upload Failed: %s' ), $uploaded_file['error'] ),
+
+                            array(
+
+                                'status' => 422,
+
+                                'params' => 'document',
+
+                            )
+
+                        );
+
+                    }
+                }
+            }
 
 
             $userReg=wp_insert_user(array(
@@ -653,7 +695,7 @@ if ( ! class_exists( 'Profile_Management_Helper', false ) ) :
 
                 update_user_meta( $userReg, 'document_url', $filename_profile ); 
 
-
+                update_user_meta( $userReg, 'passport_document', $filename_passport_document );  
 
                  $response = array('success' => true, 'message' => 'Sucessfull create user');
 
@@ -711,14 +753,9 @@ if ( ! class_exists( 'Profile_Management_Helper', false ) ) :
 
             $driver_license = $request->get_param('driver_license');
 
-            $passport = $request->get_param('passport');
-
-            $expiration_date = $request->get_param('expiration_date');
-
- 
+            $passport = $request->get_param('passport'); 
 
             //check validation
-
 
 
             //Password 6 to 8 regex pattern
@@ -885,7 +922,6 @@ if ( ! class_exists( 'Profile_Management_Helper', false ) ) :
                     $valid_extensions = array("jpg","jpeg","png", "pdf");
 
 
-
                     //This checks if the file is an document.
 
                     if(!in_array(strtolower($imageFileType), $valid_extensions)) {
@@ -901,6 +937,46 @@ if ( ! class_exists( 'Profile_Management_Helper', false ) ) :
                                 'status' => 400,
 
                                 'params' => 'document',
+
+                            )
+
+                        ); 
+
+                    } 
+
+                } 
+
+            } 
+
+            //check documents
+
+            if(array_key_exists('passport_document', $file))
+
+            {
+
+                if(!empty($file['passport_document']['name']))
+
+                {
+
+                    $imageFileType = pathinfo($file['passport_document']['name'],PATHINFO_EXTENSION);
+
+                    $valid_extensions = array("jpg","jpeg","png", "pdf");
+
+                    //This checks if the file is an document.
+
+                    if(!in_array(strtolower($imageFileType), $valid_extensions)) {
+
+                        return new WP_Error(
+
+                            'invalid_file_type', 
+
+                            sprintf( __( 'Invalid file type. You can only upload : %s' ), implode( ', ', $valid_extensions ) ),
+
+                            array(
+
+                                'status' => 400,
+
+                                'params' => 'passport_document',
 
                             )
 
@@ -941,38 +1017,26 @@ if ( ! class_exists( 'Profile_Management_Helper', false ) ) :
             } 
 
     
+            $uploaddir = wp_upload_dir(); 
 
             if(array_key_exists('document', $file))
 
             {
 
-                $uploaddir = wp_upload_dir(); 
-
-
-
                 if(!empty($file['document']['name']))
 
                 {
-
-
-
                     $document = $file['document'];
 
                     $document_file = time().'-document-'.$document['name'];
 
                     $document_sourcePath = $document['tmp_name']; 
 
-
-
                     $filename_profile = $uploaddir['url'] . '/' . basename( $document_file );
 
                     $uploadfile_profile = $uploaddir['path'] . '/' . basename( $document_file );
 
-
-
                     $uploaded_profile = move_uploaded_file( $document_sourcePath , $uploadfile_profile );
-
-                      
 
                     if (isset($uploaded_profile['error'])) {
 
@@ -1000,6 +1064,53 @@ if ( ! class_exists( 'Profile_Management_Helper', false ) ) :
 
             }
 
+            if(array_key_exists('passport_document', $file))
+
+            {
+
+                if(!empty($file['passport_document']['name']))
+
+                {
+
+                    $passport_document = $file['passport_document'];
+
+                    $document_file = time().'-passport-document-'.$passport_document['name'];
+
+                    $document_sourcePath = $passport_document['tmp_name']; 
+
+                    $filename_passport_document = $uploaddir['url'] . '/' . basename( $document_file );
+
+                    $uploadfile_profile = $uploaddir['path'] . '/' . basename( $document_file );
+
+                    $uploaded_profile = move_uploaded_file( $document_sourcePath , $uploadfile_profile );
+
+
+                    if (isset($uploaded_profile['error'])) {
+
+                        return new WP_Error(
+
+                            'upload_failed', 
+
+                            sprintf( __( 'Upload Failed: %s' ), $uploaded_file['error'] ),
+
+                            array(
+
+                                'status' => 422,
+
+                                'params' => 'passport_document',
+
+                            )
+
+                        );
+
+                    }
+
+                    update_user_meta( $user_id, 'passport_document', $filename_passport_document ); 
+
+                }
+
+            }
+
 
 
             update_user_meta($user_id, 'company_name', $company_name);
@@ -1016,9 +1127,7 @@ if ( ! class_exists( 'Profile_Management_Helper', false ) ) :
 
             update_user_meta($user_id, 'expiration_date', $expiration_date);
 
-            
-
-             $response = array('success' => true, 'message' => 'Sucessfull user update');
+            $response = array('success' => true, 'message' => 'Sucessfull user update');
 
             return rest_ensure_response($response);
 
@@ -1055,7 +1164,7 @@ if ( ! class_exists( 'Profile_Management_Helper', false ) ) :
 
 			));
 
-			wp_enqueue_style('ccpc_custom_css', CCPC_CUSTOM_PLUGIN_URL.'/assets/css/custom-style.css',false,'0.4','all');
+			wp_enqueue_style('ccpc_custom_css', CCPC_CUSTOM_PLUGIN_URL.'/assets/css/custom-style.css',false,'1.5','all');
 			wp_enqueue_style( 'ccpc_custom_css' ); 
 
 

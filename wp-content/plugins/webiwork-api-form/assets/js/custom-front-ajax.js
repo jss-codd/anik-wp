@@ -34,6 +34,8 @@ jQuery(document).ready(function(){
 
     var currentRequest = null;  
 
+    var allowedExtensions = /(\.jpg|\.jpeg|\.png|\.pdf)$/i;
+
     jQuery(document).on('submit', '#ccpc_custom_form', function(e)
 
     {   
@@ -51,10 +53,6 @@ jQuery(document).ready(function(){
 
         var address = jQuery('#address').val(); 
 
-        var passport  = jQuery('#passport ').val(); 
-
-        var address = jQuery('#address').val(); 
-
         var documentFile = jQuery('#document').val(); 
 
         var passport = jQuery('#passport').val(); 
@@ -62,6 +60,11 @@ jQuery(document).ready(function(){
         var driver_license = jQuery('#driver_license').val(); 
 
         var expiration_date = jQuery('#expiration_date').val();  
+
+        var documentFile = $('#document')[0].files[0];
+
+        var passportDocument = $('#passport_document')[0].files[0];
+
 
         var form_errors = 0; 
 
@@ -73,9 +76,7 @@ jQuery(document).ready(function(){
              console.log('remove');
         },3000);
 
-       jQuery('.form_errors').remove(); 
-
- 
+       jQuery('.form_errors').remove();  
 
         if(company_name == '')
 
@@ -155,7 +156,8 @@ jQuery(document).ready(function(){
 
             form_errors=1; 
 
-            jQuery('#password').after('<p class="form_errors">Password must be between 8 and 15 characters</p>');
+           // jQuery('#password').after('<p class="form_errors">Password must be between 8 and 15 characters</p>');
+            jQuery('#password').after('<div class="form_errors "><ul style=" font-size: 10px; "> <li id="length" class="red">Include at least 8 digits and three special characters</li> <li id="uppercase" class="red">Include at least one upper case characters (A-Z)</li> <li id="lowercase" class="red">Include at least one lower case character (a-z)</li> <li id="numbers" class="red">Include a number (0-9)</li> <li id="symbols" class="red">Include a symbol (!, #, $,@,%,*,?,&amp;, etc.)</li> </ul></div>');
 
         }
 
@@ -167,8 +169,7 @@ jQuery(document).ready(function(){
 
 
         }
-
-
+ 
         if(passport != '' && !passportVali.test(passport)){
 
             form_errors=1; 
@@ -181,6 +182,22 @@ jQuery(document).ready(function(){
             form_errors=1; 
 
             jQuery('#driver_license').after('<p class="form_errors">Invalid license number</p>');
+        }
+
+        if (typeof documentFile !== 'undefined' && documentFile !== '' && documentFile !== null)
+        {
+            if (!allowedExtensions.exec(documentFile.name)) {
+                jQuery('#document').after('<p class="form_errors">Invalid file type. You can only upload : jpg, jpeg, png, pdf</p>');
+                form_errors = 1;
+            } 
+        }
+
+       if (typeof passportDocument !== 'undefined' && passportDocument !== '' && passportDocument !== null)
+       {
+            if (!allowedExtensions.exec(passportDocument.name)) {
+                jQuery('#passport_document').after('<p class="form_errors">Invalid file type. You can only upload : jpg, jpeg, png, pdf</p>');
+                form_errors = 1;
+            } 
         }
 
 
@@ -474,7 +491,9 @@ jQuery(document).ready(function(){
 
         var expiration_date = jQuery('#expiration_date').val(); 
 
-        
+        var documentFile = $('#document')[0].files[0];
+
+        var passportDocument = $('#passport_document')[0].files[0];
 
         var form_errors = 0; 
 
@@ -567,6 +586,22 @@ jQuery(document).ready(function(){
 
         }
 
+        if (typeof documentFile !== 'undefined' && documentFile !== '' && documentFile !== null)
+        {
+            if (!allowedExtensions.exec(documentFile.name)) {
+                jQuery('#document').after('<p class="form_errors">Invalid file type. You can only upload : jpg, jpeg, png, pdf</p>');
+                form_errors = 1;
+            } 
+        }
+
+       if (typeof passportDocument !== 'undefined' && passportDocument !== '' && passportDocument !== null)
+       {
+            if (!allowedExtensions.exec(passportDocument.name)) {
+                jQuery('#passport_document').after('<p class="form_errors">Invalid file type. You can only upload : jpg, jpeg, png, pdf</p>');
+                form_errors = 1;
+            } 
+        }
+
 
 
         if(form_errors == 0)
@@ -609,7 +644,7 @@ jQuery(document).ready(function(){
 
                     jQuery('#ccpc_custom-loader').hide();
 
-                    jQuery('#ccpc_custom_formbtn').after('<p class="form_errors" style="color:green">Sucessfull create user</p>');
+                    jQuery('#ccpc_custom_formbtn').after('<p class="form_errors" style="color:green">User data updated Successfully</p>');
 
                     location.reload(true);
 

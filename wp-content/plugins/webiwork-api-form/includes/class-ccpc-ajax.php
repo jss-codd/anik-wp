@@ -185,6 +185,34 @@ if ( ! class_exists( 'Profile_Management_Ajax', false ) ) :
 
 											<div class="form-group">
 
+												<label for="driver_license">Driver's License</label>
+
+												<input type="text" class="form-control" id="driver_license" name="driver_license" value="" placeholder="21041992000">
+
+											</div>
+
+										</div>
+
+										<div class="col-md-6">
+
+											<div class="form-group">
+
+												<label for="document">Driver's Document</label>
+
+												<input type="file" class="form-control" id="document" name="document" accept="image/jpeg,image/jpg,image/png,application/pdf,image/x-eps" placeholder="Enter Document">
+ 
+											</div>
+
+										</div>	
+
+									</div>
+
+									<div class="row">
+
+										<div class="col-md-6">
+
+											<div class="form-group">
+
 												<label for="passport">Passport</label>
 
 												<input type="text" class="form-control" id="passport" name="passport" value="" placeholder="RA0123456">
@@ -197,37 +225,29 @@ if ( ! class_exists( 'Profile_Management_Ajax', false ) ) :
 
 											<div class="form-group">
 
-												<label for="driver_license">Driver's License</label>
+												<label for="passport_document">Passport Document</label>
 
-												<input type="text" class="form-control" id="driver_license" name="driver_license" value="" placeholder="21041992000">
-
+												<input type="file" class="form-control" id="passport_document" name="passport_document" accept="image/jpeg,image/jpg,image/png,application/pdf,image/x-eps" placeholder="Enter Document">
+ 
 											</div>
 
 										</div>	
+
+									</div>
+
+									<div class="row">
 
 										<div class="col-md-6">
 
 											<div class="form-group">
 
-												<label for="expiration_date">Expiration date</label>
+												<label for="expiration_date">Passport Expiration date</label>
 
 												<input type="input" class="form-control" id="expiration_date" name="expiration_date" value="" placeholder="Enter Expiration date">
 
 											</div>
 
-										</div>
-
-										<div class="col-md-6">
-
-											<div class="form-group">
-
-												<label for="document">Document Upload</label>
-
-												<input type="file" class="form-control" id="document" name="document" value="" placeholder="Enter Document">
-
-											</div>
-
-										</div>
+										</div> 
 
 									</div>
 
@@ -330,7 +350,7 @@ if ( ! class_exists( 'Profile_Management_Ajax', false ) ) :
 
 											<label for="password">Password <span>&#42;</span></label>
 
-											<input type="password" class="form-control" id="password" name="password" value="" >
+											<input type="password" class="form-control" id="password" name="password" value="" placeholder="Enter password">
 
 										</div>
 
@@ -638,6 +658,8 @@ if ( ! class_exists( 'Profile_Management_Ajax', false ) ) :
 	            $expiration_date = get_user_meta($user->ID, 'expiration_date', true);
 
 	            $document_url = get_user_meta( $user->ID, 'document_url', true); 
+	            
+	            $passport_document = get_user_meta( $user->ID, 'passport_document', true); 
 
 
 	        	ob_start();  
@@ -714,9 +736,9 @@ if ( ! class_exists( 'Profile_Management_Ajax', false ) ) :
 
 										<div class="form-group">
 
-											<label for="bb-email">Email <span>&#42;</span></label>
+											<label for="bb-email">Email</label>
 
-											<input type="text" class="form-control" id="bb-email" name="email" value="<?php echo $user->user_email ?>"readonly>
+											<input type="text" disabled class="form-control disabled-input" id="bb-email" name="email" value="<?php echo $user->user_email ?>"readonly >
 
 										</div>
 
@@ -745,6 +767,47 @@ if ( ! class_exists( 'Profile_Management_Ajax', false ) ) :
 
 								</div>
 
+								 
+
+								<div class="row">
+
+									<div class="col-md-6">
+
+										<div class="form-group">
+
+											<label for="driver_license">Driver's License</label>
+
+											<input type="text" class="form-control" id="driver_license" name="driver_license" value="<?php echo $driver_license ?>" placeholder="21041992000">
+
+										</div>
+
+									</div>
+
+									<div class="col-md-5">
+
+										<div class="form-group">
+
+											<label for="document">Driver's Document</label>
+											<input type="file" class="form-control" id="document" name="document" accept="image/jpeg,image/jpg,image/png,application/pdf,image/x-eps" placeholder="Enter Document">
+ 
+										</div>
+
+									</div>	 
+                                    
+
+									<div class="col-md-1">
+										<?php if(!empty($document_url)){ ?>
+											<div class="form-group">
+
+											<label for="passport_document">View</label>
+										<a target="_blank" href="<?php echo $document_url; ?>"><img width="50" height="50" src="<?php echo CCPC_CUSTOM_PLUGIN_URL; ?>/assets/img/document-icon.png"></a>
+									</div>
+										
+                                    <?php } ?>
+									</div>
+	
+								</div>
+
 								<div class="row">
 
 									<div class="col-md-6">
@@ -759,43 +822,44 @@ if ( ! class_exists( 'Profile_Management_Ajax', false ) ) :
 
 									</div>	
 
-									<div class="col-md-6">
+									<div class="col-md-5">
 
 										<div class="form-group">
 
-											<label for="driver_license">Driver's License</label>
+											<label for="passport_document">Passport Document</label>
 
-											<input type="text" class="form-control" id="driver_license" name="driver_license" value="<?php echo $driver_license ?>" placeholder="21041992000">
-
+											<input type="file" class="form-control" id="passport_document" name="passport_document" accept="image/jpeg,image/jpg,image/png,application/pdf,image/x-eps" placeholder="Enter Document">
+ 
 										</div>
 
+									</div>	
+									
+									<div class="col-md-1">
+										<?php if(!empty($passport_document)){ ?>
+											<div class="form-group">
+
+											<label for="passport_document">View</label>
+										<a target="_blank" href="<?php echo $passport_document; ?>"><img width="50" height="50" src="<?php echo CCPC_CUSTOM_PLUGIN_URL; ?>/assets/img/document-icon.png"></a>
 									</div>
+										
+                                    	<?php } ?>
+									</div>
+
 								</div>
-								<div class="row">	
+
+								<div class="row">
 
 									<div class="col-md-6">
 
 										<div class="form-group">
 
-											<label for="expiration_date">Expiration date</label>
+											<label for="expiration_date">Passport Expiration date</label>
 
-											<input type="input" class="form-control" id="expiration_date" name="expiration_date" value="<?php echo $expiration_date ?>" placeholder="Enter Expiration date" >
-
-										</div>
-
-									</div>
-
-									<div class="col-md-6">
-
-										<div class="form-group">
-
-											<label for="document">Document Upload</label>
-
-											<input type="file" class="form-control" id="document" name="document" value="" placeholder="Enter Document">
+											<input type="input" class="form-control" id="expiration_date" name="expiration_date" value="<?php echo $expiration_date ?>" placeholder="Enter Expiration date">
 
 										</div>
 
-									</div>
+									</div> 
 
 								</div>
 
