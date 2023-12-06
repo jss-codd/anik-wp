@@ -1,50 +1,22 @@
-# https://help.github.com/en/articles/metadata-syntax-for-github-actions
+name: Code Scanning
 
-author: 'muglug'
+on:
+  push:
+    branches:
+      - main # Change this to your branch name
 
-branding:
-  icon: 'check'
-  color: 'blue'
+jobs:
+  build:
+    runs-on: ubuntu-latest
 
-description: 'Run Psalm via GitHub Actions'
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
 
-name: 'Psalm – Static Analysis for PHP'
-
-inputs:
-  security_analysis:
-    required: false
-    default: 'false'
-    description: 'Whether or not to use Psalm’s security analysis'
-  show_info:
-    required: false
-    default: 'false'
-    description: 'Whether or not to show non-exception parser findings'
-  report_file:
-    required: false
-    default: ''
-    description: 'File for Psalm’s output'
-  composer_require_dev:
-    required: false
-    default: 'false'
-    description: 'Whether or not Composer installs dev packages'
-  composer_ignore_platform_reqs:
-    required: false
-    default: 'false'
-    description: 'Whether or not the --ignore-platform-reqs flag is passed to Composer'
-  ssh_key:
-    description: The private key contents to use for private repositories
-    required: false
-  ssh_key_pub:
-    description: The public key contents to use for private repositories
-    required: false
-  ssh_domain:
-    description: The domain to gather SSH public keys for (automatic for github.com, gitlab.com, bitbucket.org)
-    required: false
-  relative_dir:
-    description: If your composer file is not in the directory, you can specify the relative directory.
-    required: false
-
-
-runs:
-  using: 'docker'
-  image: 'docker://ghcr.io/psalm/psalm-github-actions'
+    - name: Initialize CodeQL
+      uses: github/codeql-action/init@v1
+      
+    - name: Analyze PHP code
+      uses: github/codeql-action/analyze@v1
+      with:
+        languages: php
