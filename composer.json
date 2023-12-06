@@ -1,9 +1,10 @@
 {
-    "name": "vendor/scancode",
-    "license": "MIT",
+    "name": "vendor/codescan",
+    "description": "for scan php codes",
+    "license": "GPL-3.0-or-later",
     "autoload": {
         "psr-4": {
-            "Vendor\\Scancode\\": "src/"
+            "Vendor\\Codescan\\": "src/"
         }
     },
     "authors": [
