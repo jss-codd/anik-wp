@@ -16,7 +16,6 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 	die( 'Invalid request.' );
 }
-  
 
 add_action( 'plugins_loaded', 'webiwork_api_company_form_init' );
 function webiwork_api_company_form_init() {
