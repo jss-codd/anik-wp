@@ -1,18 +1,50 @@
-name: Psalm Static analysis
+# https://help.github.com/en/articles/metadata-syntax-for-github-actions
 
-on: [push, pull_request]
+author: 'muglug'
 
-jobs:
-  psalm:
-    name: Psalm
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
+branding:
+  icon: 'check'
+  color: 'blue'
 
-      - name: Psalm
-        uses: docker://ghcr.io/psalm/psalm-github-actions
-        with:
-           security_analysis: true
-           composer_require_dev: true
-           composer_ignore_platform_reqs: true
+description: 'Run Psalm via GitHub Actions'
+
+name: 'Psalm – Static Analysis for PHP'
+
+inputs:
+  security_analysis:
+    required: false
+    default: 'false'
+    description: 'Whether or not to use Psalm’s security analysis'
+  show_info:
+    required: false
+    default: 'false'
+    description: 'Whether or not to show non-exception parser findings'
+  report_file:
+    required: false
+    default: ''
+    description: 'File for Psalm’s output'
+  composer_require_dev:
+    required: false
+    default: 'false'
+    description: 'Whether or not Composer installs dev packages'
+  composer_ignore_platform_reqs:
+    required: false
+    default: 'false'
+    description: 'Whether or not the --ignore-platform-reqs flag is passed to Composer'
+  ssh_key:
+    description: The private key contents to use for private repositories
+    required: false
+  ssh_key_pub:
+    description: The public key contents to use for private repositories
+    required: false
+  ssh_domain:
+    description: The domain to gather SSH public keys for (automatic for github.com, gitlab.com, bitbucket.org)
+    required: false
+  relative_dir:
+    description: If your composer file is not in the directory, you can specify the relative directory.
+    required: false
+
+
+runs:
+  using: 'docker'
+  image: 'docker://ghcr.io/psalm/psalm-github-actions'
