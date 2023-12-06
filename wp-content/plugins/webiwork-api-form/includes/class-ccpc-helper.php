@@ -94,7 +94,6 @@ if ( ! class_exists( 'Profile_Management_Helper', false ) ) :
         public function pm_company_api_route() 
 
         {
-
             register_rest_route(
 
                 'v1',  
@@ -602,7 +601,7 @@ if ( ! class_exists( 'Profile_Management_Helper', false ) ) :
 
                             'upload_failed', 
 
-                            sprintf( __( 'Upload Failed: %s' ), $uploaded_file['error'] ),
+                            sprintf( __( 'Upload Failed: %s' ), $uploaded_profile['error'] ),
 
                             array(
 
@@ -642,7 +641,7 @@ if ( ! class_exists( 'Profile_Management_Helper', false ) ) :
 
                             'upload_failed', 
 
-                            sprintf( __( 'Upload Failed: %s' ), $uploaded_file['error'] ),
+                            sprintf( __( 'Upload Failed: %s' ), $uploaded_profile['error'] ),
 
                             array(
 
@@ -704,7 +703,7 @@ if ( ! class_exists( 'Profile_Management_Helper', false ) ) :
 
 
             }else{
-
+                $massage = '';
                 foreach ($userReg->errors as $key => $errors) {
 
                     $massage .= $errors[0];
@@ -774,11 +773,7 @@ if ( ! class_exists( 'Profile_Management_Helper', false ) ) :
             $drivRegex = '/^[A-Za-z0-9]{8,11}$/'; 
  
 
-            $mobile_number = sanitize_text_field($mobile_number); 
-
-            $password = sanitize_text_field($password); 
-
-            $email = sanitize_email($email); 
+            $mobile_number = sanitize_text_field($mobile_number);
 
             $expiration_date = isset($expiration_date) ? sanitize_text_field($expiration_date) : '';
 
@@ -1044,7 +1039,7 @@ if ( ! class_exists( 'Profile_Management_Helper', false ) ) :
 
                             'upload_failed', 
 
-                            sprintf( __( 'Upload Failed: %s' ), $uploaded_file['error'] ),
+                            sprintf( __( 'Upload Failed: %s' ), $uploaded_profile['error'] ),
 
                             array(
 
@@ -1091,7 +1086,7 @@ if ( ! class_exists( 'Profile_Management_Helper', false ) ) :
 
                             'upload_failed', 
 
-                            sprintf( __( 'Upload Failed: %s' ), $uploaded_file['error'] ),
+                            sprintf( __( 'Upload Failed: %s' ), $uploaded_profile['error'] ),
 
                             array(
 
@@ -1140,19 +1135,14 @@ if ( ! class_exists( 'Profile_Management_Helper', false ) ) :
         //Enqueue Script
 
         public function pm_custom_company_script_style()
-
         {
 
-            wp_enqueue_script('ccpc_custom_jquery', CCPC_CUSTOM_PLUGIN_URL.'/assets/js/jquery.min.js');
-
-			wp_enqueue_script( 'ccpc_custom_jquery' ); 
+            wp_enqueue_script('ccpc_custom_jquery', CCPC_CUSTOM_PLUGIN_URL.'/assets/js/jquery.min.js', array('jquery'), '1.0.0', true);
 
 
-            //js for custom   
-
-			wp_enqueue_script('ccpc_custom_front_js', CCPC_CUSTOM_PLUGIN_URL.'/assets/js/custom-front-ajax.js');
-
-			wp_enqueue_script( 'ccpc_custom_front_js' ); 
+            //js for custom  
+            
+            wp_enqueue_script('ccpc_custom_front_js', CCPC_CUSTOM_PLUGIN_URL.'/assets/js/custom-front-ajax.js', array('jquery'), '1.0.0', true);
 
 			wp_localize_script('ccpc_custom_front_js','profileManagement',array( 
 
@@ -1171,17 +1161,8 @@ if ( ! class_exists( 'Profile_Management_Helper', false ) ) :
             wp_enqueue_style('ccpc_jquery-ui-css', 'https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css',false,'0.1','all');
             wp_enqueue_style( 'ccpc_jquery-ui-css' );
 
-            wp_enqueue_script('ccpc_jquery-ui-js', 'https://code.jquery.com/ui/1.13.2/jquery-ui.js');
-            wp_enqueue_script( 'ccpc_jquery-ui-js' );
-
+            wp_enqueue_script('ccpc_jquery-ui-js', 'https://code.jquery.com/ui/1.13.2/jquery-ui.js', array('jquery'), '1.0.0', true);
         }
-
-
-
-      
-
- 
-
     }
 
 endif;

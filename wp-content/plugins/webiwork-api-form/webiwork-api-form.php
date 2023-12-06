@@ -16,6 +16,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 	die( 'Invalid request.' );
 }
+  
 
 add_action( 'plugins_loaded', 'webiwork_api_company_form_init' );
 function webiwork_api_company_form_init() {
@@ -52,8 +53,10 @@ function webiwork_api_company_form_init() {
              * Protected constructor to prevent creating a new instance of the
              * *Company_Profile_Management* via the `new` operator from outside of this class.
              */
-            private function __construct() {
-                $this->init();
+
+            private function __construct()
+            {
+                add_action( 'init', array( $this, 'init_hooks' ) );
             }
 
             /**
@@ -62,20 +65,19 @@ function webiwork_api_company_form_init() {
              * @since 1.0.0
              * @version 1.0.0
              */
-            public function init() {
-                if ( is_admin() ) {
-                     //admin 
+            public function init_hooks(){
+                if(is_admin()) {
+                    //admin
                     require_once dirname( __FILE__ ) . '/includes/admin/class-ccpc-admin.php';
                 }
-                //helpers 
+                //helpers
                 require_once dirname( __FILE__ ) . '/includes/class-ccpc-helper.php';
                 
                 //ccpc base classes 
                 require_once dirname( __FILE__ ) . '/includes/class-ccpc-base.php'; 
 
                 //Ajax class
-                require_once dirname( __FILE__ ) . '/includes/class-ccpc-ajax.php'; 
-                
+                require_once dirname( __FILE__ ) . '/includes/class-ccpc-ajax.php';
             }
 
         }
