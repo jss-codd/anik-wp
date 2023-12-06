@@ -1,0 +1,16 @@
+{
+    "name": "vendor/scancode",
+    "license": "anik-wp",
+    "autoload": {
+        "psr-4": {
+            "Vendor\\Scancode\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "aniketpandey8989",
+            "email": "pandeyaniket546@gmail.com"
+        }
+    ],
+    "require": {}
+}
