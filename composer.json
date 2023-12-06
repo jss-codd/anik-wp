@@ -1,6 +1,6 @@
 {
     "name": "vendor/scancode",
-    "license": "anik-wp",
+    "license": "MIT",
     "autoload": {
         "psr-4": {
             "Vendor\\Scancode\\": "src/"
