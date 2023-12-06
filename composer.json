@@ -1,0 +1,15 @@
+{
+    "name": "vendor/scan-code",
+    "autoload": {
+        "psr-4": {
+            "Vendor\\ScanCode\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "aniketpandey8989",
+            "email": "pandeyaniket546@gmail.com"
+        }
+    ],
+    "require": {}
+}
